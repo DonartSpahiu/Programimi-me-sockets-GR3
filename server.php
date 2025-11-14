@@ -26,4 +26,42 @@ echo "Serveri UDP po dëgjon në $ip:$port...\n";
 socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, ["sec" => 5, "usec" => 0]);
 $clients = [];
 
+// Funksionet 
+function send_reply($socket, $client_key, $reply) {
+    global $clients;
+    $client = $clients[$client_key];
+    if (!$client['is_admin']) sleep(1); // vonese per kliente (jo-admin)
+    socket_sendto($socket, $reply, strlen($reply), 0, $client['ip'], $client['port']);
+    $clients[$client_key]['bytes_sent'] += strlen($reply);
+}
+
+function check_client_timeouts() {
+    global $clients, $client_timeout_seconds;
+    $now = time();
+    foreach ($clients as $key => $client) {
+        if ($now - $client['last_seen'] > $client_timeout_seconds) {
+            echo "Klienti $key u shkëput (timeout).\n";
+            unset($clients[$key]);
+        }
+    }
+}
+
+function update_stats() {
+    global $clients, $stats_file;
+    $total_recv = 0; $total_sent = 0;
+    foreach ($clients as $c) {
+        $total_recv += $c['bytes_recv'];
+        $total_sent += $c['bytes_sent'];
+    }
+    $data = "----- STATISTIKA (" . date('H:i:s') . ") -----\n";
+    $data .= "Klientë aktivë: " . count($clients) . "\n";
+    foreach ($clients as $key => $c) {
+        $admin = $c['is_admin'] ? "PO" : "JO";
+        $data .= "$key | Admin: $admin | Msg: {$c['msg_count']} | Recv: {$c['bytes_recv']}B | Sent: {$c['bytes_sent']}B\n";
+    }
+    $data .= "Total Recv: $total_recv B, Sent: $total_sent B\n\n";
+    file_put_contents($stats_file, $data);
+    return $data;
+}
+
 ?>
