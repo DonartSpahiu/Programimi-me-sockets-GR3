@@ -64,4 +64,26 @@ function update_stats() {
     return $data;
 }
 
+// Funksionet për komandat
+function handle_list($dir) {
+    return "Skedarët:\n" . implode("\n", array_diff(scandir($dir), ['.', '..']));
+}
+
+function handle_read($dir, $file) {
+    $path = "$dir/" . basename($file);
+    return file_exists($path) ? file_get_contents($path) : "Skedari nuk ekziston.";
+}
+
+function handle_delete($dir, $file) {
+    $path = "$dir/" . basename($file);
+    return (file_exists($path) && unlink($path)) ? "Skedari '$file' u fshi." : "Gabim në fshirje.";
+}
+
+function handle_search($dir, $key) {
+    $files = array_diff(scandir($dir), ['.', '..']);
+    $matches = array_filter($files, fn($f) => str_contains($f, $key));
+    return empty($matches) ? "Nuk u gjet asgjë për '$key'." : implode("\n", $matches);
+}
+
+
 ?>
