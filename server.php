@@ -104,7 +104,21 @@ function handle_info($dir, $file)
         return "Nuk ekziston.";
     return "Madhësia: " . filesize($path) . " bytes\nKrijuar: " . date('Y-m-d H:i:s', filectime($path)) . "\nModifikuar: " . date('Y-m-d H:i:s', filemtime($path));
 }
+function handle_upload($dir, $filename, $data)
+{
+    $path = "$dir/" . basename($filename);
+    $decoded = base64_decode($data);
+    file_put_contents($path, $decoded);
+    return "Skedari '$filename' u ngarkua me sukses (" . strlen($decoded) . " bytes).";
+}
 
+function handle_download($dir, $filename)
+{
+    $path = "$dir/" . basename($filename);
+    if (!file_exists($path))
+        return "Skedari nuk ekziston.";
+    return base64_encode(file_get_contents($path));
+}
 
 //Cikli kryesor i serverit (per pranim te mesazheve)
 while (true) {
