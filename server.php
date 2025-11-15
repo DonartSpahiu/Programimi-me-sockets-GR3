@@ -96,6 +96,16 @@ function handle_search($dir, $key)
     return empty($matches) ? "Nuk u gjet asgjë për '$key'." : implode("\n", $matches);
 }
 
+//Funksionet info, upload dhe download
+function handle_info($dir, $file)
+{
+    $path = "$dir/" . basename($file);
+    if (!file_exists($path))
+        return "Nuk ekziston.";
+    return "Madhësia: " . filesize($path) . " bytes\nKrijuar: " . date('Y-m-d H:i:s', filectime($path)) . "\nModifikuar: " . date('Y-m-d H:i:s', filemtime($path));
+}
+
+
 //Cikli kryesor i serverit (per pranim te mesazheve)
 while (true) {
     $buf = null;
@@ -141,5 +151,30 @@ while (true) {
         $reply = update_stats();
     elseif (str_starts_with($msg, "/list"))
         $reply = $clients[$key]['is_admin'] ? handle_list($server_files_dir) : "Nuk keni leje.";
+    elseif (str_starts_with($msg, "/read "))
+        $reply = handle_read($server_files_dir, substr($msg, 6));
+    elseif (str_starts_with($msg, "/delete "))
+        $reply = $clients[$key]['is_admin'] ? handle_delete($server_files_dir, substr($msg, 8)) : "Nuk keni leje.";
+    elseif (str_starts_with($msg, "/search "))
+        $reply = $clients[$key]['is_admin'] ? handle_search($server_files_dir, substr($msg, 8)) : "Nuk keni leje.";
+    elseif (str_starts_with($msg, "/info "))
+        $reply = $clients[$key]['is_admin'] ? handle_info($server_files_dir, substr($msg, 6)) : "Nuk keni leje.";
+    elseif (str_starts_with($msg, "/upload ")) {
+        if ($clients[$key]['is_admin']) {
+            [$cmd, $filename, $encoded] = explode(" ", $msg, 3);
+            $reply = handle_upload($server_files_dir, $filename, $encoded);
+        } else
+            $reply = "Nuk keni leje për /upload.";
+    } elseif (str_starts_with($msg, "/download ")) {
+        if ($clients[$key]['is_admin']) {
+            $filename = substr($msg, 10);
+            $reply = handle_download($server_files_dir, $filename);
+        } else
+            $reply = "Nuk keni leje për /download.";
+    } else
+        $reply = "Serveri pranoi mesazhin: '$msg'";
 
-} ?>
+    send_reply($socket, $key, $reply);
+}
+socket_close($socket);
+?>
