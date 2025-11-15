@@ -129,4 +129,17 @@ while (true) {
     $clients[$key]['bytes_recv'] += $bytes;
     file_put_contents($log_file, date('H:i:s') . " [$key]: $msg\n", FILE_APPEND);
 
+    // Komandat per server dhe pergjigjet
+    if (str_starts_with($msg, "LOGIN ")) {
+        $pass = explode(" ", $msg, 2)[1] ?? '';
+        if ($pass === $admin_password) {
+            $clients[$key]['is_admin'] = true;
+            $reply = "Kyçja si ADMIN u krye me sukses.";
+        } else
+            $reply = "Fjalëkalim i gabuar.";
+    } elseif ($msg === 'STATS')
+        $reply = update_stats();
+    elseif (str_starts_with($msg, "/list"))
+        $reply = $clients[$key]['is_admin'] ? handle_list($server_files_dir) : "Nuk keni leje.";
+
 } ?>
