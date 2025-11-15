@@ -18,8 +18,10 @@ if (!file_exists($server_files_dir)) {
 
 // Krijimi i socket-it UDP
 $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-if (!$socket) die("Gabim në socket_create(): " . socket_strerror(socket_last_error()) . "\n");
-if (!socket_bind($socket, $ip, $port)) die("Gabim në socket_bind(): " . socket_strerror(socket_last_error($socket)) . "\n");
+if (!$socket)
+    die("Gabim në socket_create(): " . socket_strerror(socket_last_error()) . "\n");
+if (!socket_bind($socket, $ip, $port))
+    die("Gabim në socket_bind(): " . socket_strerror(socket_last_error($socket)) . "\n");
 
 echo "Serveri UDP po dëgjon në $ip:$port...\n";
 
@@ -27,15 +29,18 @@ socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, ["sec" => 5, "usec" => 0]);
 $clients = [];
 
 // Funksionet 
-function send_reply($socket, $client_key, $reply) {
+function send_reply($socket, $client_key, $reply)
+{
     global $clients;
     $client = $clients[$client_key];
-    if (!$client['is_admin']) sleep(1); // vonese per kliente (jo-admin)
+    if (!$client['is_admin'])
+        sleep(1); // vonese per kliente (jo-admin)
     socket_sendto($socket, $reply, strlen($reply), 0, $client['ip'], $client['port']);
     $clients[$client_key]['bytes_sent'] += strlen($reply);
 }
 
-function check_client_timeouts() {
+function check_client_timeouts()
+{
     global $clients, $client_timeout_seconds;
     $now = time();
     foreach ($clients as $key => $client) {
@@ -46,9 +51,11 @@ function check_client_timeouts() {
     }
 }
 
-function update_stats() {
+function update_stats()
+{
     global $clients, $stats_file;
-    $total_recv = 0; $total_sent = 0;
+    $total_recv = 0;
+    $total_sent = 0;
     foreach ($clients as $c) {
         $total_recv += $c['bytes_recv'];
         $total_sent += $c['bytes_sent'];
@@ -65,25 +72,45 @@ function update_stats() {
 }
 
 // Funksionet për komandat
-function handle_list($dir) {
+function handle_list($dir)
+{
     return "Skedarët:\n" . implode("\n", array_diff(scandir($dir), ['.', '..']));
 }
 
-function handle_read($dir, $file) {
+function handle_read($dir, $file)
+{
     $path = "$dir/" . basename($file);
     return file_exists($path) ? file_get_contents($path) : "Skedari nuk ekziston.";
 }
 
-function handle_delete($dir, $file) {
+function handle_delete($dir, $file)
+{
     $path = "$dir/" . basename($file);
     return (file_exists($path) && unlink($path)) ? "Skedari '$file' u fshi." : "Gabim në fshirje.";
 }
 
-function handle_search($dir, $key) {
+function handle_search($dir, $key)
+{
     $files = array_diff(scandir($dir), ['.', '..']);
     $matches = array_filter($files, fn($f) => str_contains($f, $key));
     return empty($matches) ? "Nuk u gjet asgjë për '$key'." : implode("\n", $matches);
 }
 
+//Cikli kryesor i serverit (per pranim te mesazheve)
+while (true) {
+    $buf = null;
+    $ip = null;
+    $portc = null;
+    $bytes = @socket_recvfrom($socket, $buf, 4096, 0, $ip, $portc);
+    if ($bytes === false) {
+        check_client_timeouts();
+        update_stats();
+        continue;
+    }
 
+    $msg = trim($buf);
+    $key = "$ip:$portc";
+
+    echo "[$key] tha: $msg\n"; // me shtypje në server
+}
 ?>
