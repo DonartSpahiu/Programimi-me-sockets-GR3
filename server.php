@@ -112,5 +112,16 @@ while (true) {
     $key = "$ip:$portc";
 
     echo "[$key] tha: $msg\n"; // me shtypje në server
-}
-?>
+
+    if (!isset($clients[$key])) {
+        if (count($clients) >= $max_clients) {
+            socket_sendto($socket, "Serveri është plot.", 64, 0, $ip, $portc);
+            continue;
+        }
+        $clients[$key] = ['ip' => $ip, 'port' => $portc, 'last_seen' => time(), 'is_admin' => false, 'msg_count' => 0, 'bytes_recv' => 0, 'bytes_sent' => 0];
+        echo "Klient i ri: $key\n";
+        $reply = "Mirë se erdhët! Ju jeni përdorues standard.";
+    } else
+        $reply = "OK.";
+
+} ?>
