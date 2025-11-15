@@ -124,4 +124,9 @@ while (true) {
     } else
         $reply = "OK.";
 
+    $clients[$key]['last_seen'] = time();
+    $clients[$key]['msg_count']++;
+    $clients[$key]['bytes_recv'] += $bytes;
+    file_put_contents($log_file, date('H:i:s') . " [$key]: $msg\n", FILE_APPEND);
+
 } ?>
