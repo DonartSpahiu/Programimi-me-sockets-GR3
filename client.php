@@ -15,3 +15,18 @@ function send_and_receive($socket, $msg, $ip, $port) {
     if ($bytes === false) echo "Asnjë përgjigje.\n";
     else echo "\n------------ Përgjigje ------------\n$buf\n-----------------------------------\n";
 }
+
+echo "Dëshironi të hyni si ADMIN? (po/jo): ";
+$pergjigje = strtolower(trim(fgets(STDIN))); 
+
+if ($pergjigje === 'po') {
+    echo "Shkruani fjalëkalimin: ";
+    $pw = trim(fgets(STDIN));
+    send_and_receive($socket, "LOGIN $pw", $server_ip, $server_port);
+} else {
+    send_and_receive($socket, "PERSHENDETJE", $server_ip, $server_port);
+}
+
+
+
+?>
