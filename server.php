@@ -1,6 +1,5 @@
 <?php
 
-// Konfigurimi i Serverit 
 $ip = '0.0.0.0';
 $port = 12345;
 $max_clients = 4;
@@ -10,13 +9,11 @@ $server_files_dir = 'server_files';
 $stats_file = 'server_stats.txt';
 $log_file = 'server_log.txt';
 
-// Krijo folderin e serverit nëse nuk ekziston
 if (!file_exists($server_files_dir)) {
     mkdir($server_files_dir, 0755, true);
     file_put_contents("$server_files_dir/shembull.txt", "Ky është një skedar shembull.");
 }
 
-// Krijimi i socket-it UDP
 $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
 if (!$socket)
     die("Gabim në socket_create(): " . socket_strerror(socket_last_error()) . "\n");
@@ -28,13 +25,13 @@ echo "Serveri UDP po dëgjon në $ip:$port...\n";
 socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, ["sec" => 5, "usec" => 0]);
 $clients = [];
 
-// Funksionet 
+ 
 function send_reply($socket, $client_key, $reply)
 {
     global $clients;
     $client = $clients[$client_key];
     if (!$client['is_admin'])
-        sleep(1); // vonese per kliente (jo-admin)
+        sleep(1); 
     socket_sendto($socket, $reply, strlen($reply), 0, $client['ip'], $client['port']);
     $clients[$client_key]['bytes_sent'] += strlen($reply);
 }
@@ -71,7 +68,6 @@ function update_stats()
     return $data;
 }
 
-// Funksionet për komandat
 function handle_list($dir)
 {
     return "Skedarët:\n" . implode("\n", array_diff(scandir($dir), ['.', '..']));
@@ -96,7 +92,6 @@ function handle_search($dir, $key)
     return empty($matches) ? "Nuk u gjet asgjë për '$key'." : implode("\n", $matches);
 }
 
-//Funksionet info, upload dhe download
 function handle_info($dir, $file)
 {
     $path = "$dir/" . basename($file);
@@ -120,7 +115,6 @@ function handle_download($dir, $filename)
     return base64_encode(file_get_contents($path));
 }
 
-//Cikli kryesor i serverit (per pranim te mesazheve)
 while (true) {
     $buf = null;
     $ip = null;
@@ -153,7 +147,6 @@ while (true) {
     $clients[$key]['bytes_recv'] += $bytes;
     file_put_contents($log_file, date('H:i:s') . " [$key]: $msg\n", FILE_APPEND);
 
-    // Komandat per server dhe pergjigjet
     if (str_starts_with($msg, "LOGIN ")) {
         $pass = explode(" ", $msg, 2)[1] ?? '';
         if ($pass === $admin_password) {
