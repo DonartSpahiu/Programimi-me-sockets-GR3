@@ -1,0 +1,5 @@
+----- STATISTIKA (15:40:33) -----
+Klientë aktivë: 1
+127.0.0.1:55618 | Admin: PO | Msg: 4 | Recv: 39B | Sent: 117B
+Total Recv: 39 B, Sent: 117 B
+
