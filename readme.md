@@ -1,4 +1,4 @@
-## Projekti 2 - Programimi me Sockets
+# Projekti 2 - Programimi me Sockets
 
 - Ky projekt demonstron komunikimin klient-server përmes protokollit UDP, duke mundësuar lidhjen e disa klientëve (të paktën 4) me një server në një rrjet real. Serveri menaxhon kërkesat, ruan logimet, dhe ofron privilegje të ndryshme për përdoruesit standard dhe ata me të drejta admin.
 
@@ -35,12 +35,12 @@
 
 ## Ekzekutimi
 
-# Startimi i serverit
+Startimi i serverit
 - Hapni terminalin dhe shkoni te folderi i projektit: cd path/to/Project
 - Startoni serverin: php server.php
 - Serveri do të presë lidhje nga klientët dhe regjistron aktivitetet në server_log.txt dhe statistikat në server_stats.txt.
 
-# Startimi i klientit
+Startimi i klientit
 - Hapni terminal të ri për çdo klient dhe shkoni te folderi i projektit: cd path/to/Project
 - Startoni klientin: php client.php
 - Klienti lidhet me serverin dhe mund të përdorë komandat e autorizuara.
